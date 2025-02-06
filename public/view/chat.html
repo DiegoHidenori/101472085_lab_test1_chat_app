@@ -11,7 +11,6 @@
 <body class="d-flex flex-column align-items-center vh-100">
     <h2 class="mt-3">Welcome, <span id="username"></span></h2>
     <div id="chatrooms" class="d-flex flex-column align-items-center">
-        <!-- List of chat rooms will be displayed here -->
     </div>
 
     <script>
@@ -25,25 +24,16 @@
                 return;
             }
 
-            // Display the logged-in username
             $("#username").text(username);
-
-            // Example of how to get available chat rooms
-            const chatRooms = ["covid19", "technology", "sports"]; // Example room list
-
-            // Display chat rooms
+            const chatRooms = ["covid19", "technology", "sports", "devops", "cloud computing"];
             chatRooms.forEach(function(room) {
                 const roomElement = `<button class="btn btn-secondary m-2" onclick="joinRoom('${room}')">${room}</button>`;
                 $("#chatrooms").append(roomElement);
             });
 
-            // Function to join room when clicked
             window.joinRoom = function(room) {
-                // Store the room name in localStorage
                 localStorage.setItem("room", room);
-
-                // Redirect to the chatroom page
-                window.location.href = "chatroom.html"; // Chat room page
+                window.location.href = "chatroom.html";
             };
         });
     </script>

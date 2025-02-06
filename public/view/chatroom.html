@@ -27,66 +27,75 @@
             const socket = io("http://localhost:3000");
             const username = localStorage.getItem("username");
             const room = localStorage.getItem("room");
-
+    
             if (!username || !room) {
                 alert("You must be logged in and in a room to access the chat.");
                 window.location.href = "login.html";
                 return;
             }
-
+    
             // Display the room name
             $("#roomName").text(room);
-
-            // Join the room
+    
+            // Join the room and fetch previous messages
             socket.emit("joinRoom", { username, room });
-
+    
             // Show incoming messages
             socket.on("message", function (data) {
                 const messageElement = `<div><strong>${data.username}</strong>: ${data.text}</div>`;
                 $("#messages").append(messageElement);
                 $("#messages").scrollTop($("#messages")[0].scrollHeight); // Scroll to the bottom
             });
-
+    
+            // Listen for previous messages when joining a room
+            socket.on("previousMessages", function (messages) {
+                messages.forEach(message => {
+                    const messageElement = `<div><strong>${message.from_user}</strong>: ${message.message}</div>`;
+                    $("#messages").append(messageElement);
+                });
+                $("#messages").scrollTop($("#messages")[0].scrollHeight); // Scroll to the bottom
+            });
+    
             // Handle sending a message
             $("#sendMessageButton").click(function () {
                 const messageText = $("#messageInput").val();
                 if (messageText.trim() === "") return;
-
+    
                 // Emit the message to the server (to the room)
                 socket.emit("chatMessage", { username, room, text: messageText });
-
+    
                 // Clear the input field
                 $("#messageInput").val("");
             });
-
+    
             // Handle typing indicator (optional feature)
             let typingTimeout;
             $("#messageInput").on("input", function () {
                 if (typingTimeout) clearTimeout(typingTimeout);
                 socket.emit("typing", { username, room });
-
+    
                 typingTimeout = setTimeout(function () {
                     socket.emit("stopTyping", { username, room });
                 }, 500);
             });
-
+    
             // Show typing indicator
             socket.on("typing", function (data) {
                 $("#messages").append(`<div><em>${data.username} is typing...</em></div>`);
             });
-
+    
             // Remove typing indicator
             socket.on("stopTyping", function (data) {
                 $("#messages div:contains('${data.username} is typing...')").remove();
             });
-
+    
             // Leave room button
             $("#leaveRoomButton").click(function () {
                 socket.emit("leaveRoom", { username, room });
-
+    
                 // Clear room from localStorage
                 localStorage.removeItem("room");
-
+    
                 // Redirect to room selection page
                 setTimeout(function () {
                     window.location.href = "chat.html"; // Redirect to chatroom selection page
@@ -94,5 +103,6 @@
             });
         });
     </script>
+    
 </body>
 </html>
